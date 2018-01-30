@@ -521,10 +521,10 @@ Return Value:
                 break;
             }
 
-            //if (pEthHeader->EthType != Globals.EthType)
-            //{
-            //    break;
-            //}
+            if (pEthHeader->EthType != Globals.EthType)
+            {
+                break;
+            }
 
             bAcceptedReceive = TRUE;
             DEBUGP(DL_LOUD, ("ReceiveNetBufferList: Open %p, interesting nbl %p\n",
