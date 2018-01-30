@@ -521,10 +521,18 @@ Return Value:
                 break;
             }
 
+            // 
+            // **** BEGIN ISOGRID CHANGE ****
+            // 
+
             if (pEthHeader->EthType != Globals.EthType)
             {
                 break;
             }
+
+            //
+            // **** END ISOGRID CHANGE ****
+            //
 
             bAcceptedReceive = TRUE;
             DEBUGP(DL_LOUD, ("ReceiveNetBufferList: Open %p, interesting nbl %p\n",
@@ -540,7 +548,7 @@ Return Value:
 
             if (NoReadIRP || NDIS_TEST_RECEIVE_CANNOT_PEND(ReceiveFlags))
             {
-            	bAcceptedReceive = FALSE;
+                bAcceptedReceive = FALSE;
                 pCopyNetBufList = ndisprotAllocateReceiveNetBufferList(
                                 pOpenContext,
                                 TotalLength,

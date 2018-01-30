@@ -24,7 +24,7 @@ Revision History:
 #define __FILENUMBER 'DNES'
 
 
-
+ULONG g_SubframeCounter = 0;
 
 NTSTATUS
 NdisprotWrite(
@@ -102,20 +102,15 @@ Return Value:
         //
         // Sanity-check the length.
         //
-        if (DataLength < sizeof(NDISPROT_ETH_HEADER))
+
+        // 
+        // **** BEGIN ISOGRID CHANGE ****
+        // 
+
+        if (DataLength != 534)
         {
-            DEBUGP(DL_WARN, ("Write: too small to be a valid packet (%d bytes)\n",
+            DEBUGP(DL_WARN, ("Write: must be 534 bytes (specified %d bytes)\n",
                 DataLength));
-            NtStatus = STATUS_BUFFER_TOO_SMALL;
-            break;
-        }
-
-        if (DataLength > (pOpenContext->MaxFrameSize + sizeof(NDISPROT_ETH_HEADER)))
-        {
-            DEBUGP(DL_WARN, ("Write: Open %p: data length (%d)"
-                    " larger than max frame size (%d)\n",
-                    pOpenContext, DataLength, pOpenContext->MaxFrameSize));
-
             NtStatus = STATUS_INVALID_BUFFER_SIZE;
             break;
         }
@@ -127,14 +122,14 @@ Return Value:
             NtStatus = STATUS_INVALID_PARAMETER;
             break;
         }
-       
-        if (!NPROT_MEM_CMP(pEthHeader->SrcAddr, pOpenContext->CurrentAddress, NPROT_MAC_ADDR_LEN))
-        {
-            DEBUGP(DL_WARN, ("Write: Failing with invalid Source address"));
-            NtStatus = STATUS_INVALID_PARAMETER;
-            break;
-        }
-        
+
+        pEthHeader->SrcAddr[4] = 0;
+        pEthHeader->SrcAddr[5] = 0;
+        *((ULONG*)(pEthHeader->SrcAddr)) = g_SubframeCounter++;        
+
+        // 
+        // **** END ISOGRID CHANGE ****
+        // 
 
         NPROT_ACQUIRE_LOCK(&pOpenContext->Lock, FALSE);
 
@@ -147,7 +142,7 @@ Return Value:
 
             NtStatus = STATUS_INVALID_HANDLE;
             break;
-        } 
+        }
 
         if (pOpenContext->State != NdisprotRunning  ||
             pOpenContext->PowerState != NetDeviceStateD0)

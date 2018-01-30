@@ -84,10 +84,9 @@ Return Value:
 
     do
     {
-        //
-        // Create our device object using which an application can
-        // access NDIS devices.
-        //
+        // 
+        // **** BEGIN ISOGRID CHANGE ****
+        // 
         RtlInitUnicodeString(&ntDeviceName, NT_DEVICE_NAME);
         RtlInitUnicodeString(&sddl, L"D:P(A;;GA;;;SY)(A;;GA;;;LS)(A;;GA;;;NS)(A;;GA;;;UD)(A;;GA;;;BA)(A;;GA;;;BU)");
 
@@ -100,7 +99,11 @@ Return Value:
                                       &sddl,
                                       NULL,
                                       &deviceObject);
-    
+
+        // 
+        // **** END ISOGRID CHANGE ****
+        // 
+
         if (!NT_SUCCESS (status))
         {
             //
