@@ -49,10 +49,14 @@ Revision History:
 #  error Unsupported NDIS version
 #endif
 
-
-#define NT_DEVICE_NAME          L"\\Device\\Ndisprot"
-#define DOS_DEVICE_NAME         L"\\Global??\\Ndisprot"
-
+// 
+// **** BEGIN ISOGRID CHANGE ****
+// 
+#define NT_DEVICE_NAME          L"\\Device\\IsoSwitch"
+#define DOS_DEVICE_NAME         L"\\Global??\\IsoSwitch"
+// 
+// **** END ISOGRID CHANGE ****
+// 
 
 //
 //  Abstract types

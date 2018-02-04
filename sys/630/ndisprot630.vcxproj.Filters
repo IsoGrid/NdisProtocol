@@ -44,7 +44,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Inf Include="*.inf">
+    <Inf Include="IsoSwitch630.inf">
       <Filter>Driver Files</Filter>
     </Inf>
   </ItemGroup>

@@ -29,7 +29,13 @@ Revision History:
 #pragma alloc_text(PAGE, NdisprotUnload)
 #pragma alloc_text(PAGE, NdisprotOpen)
 #pragma alloc_text(PAGE, NdisprotClose)
+// 
+// **** BEGIN ISOGRID CHANGE ****
+// 
 #pragma alloc_text(PAGE, NdisprotIoControl)
+// 
+// **** END ISOGRID CHANGE ****
+// 
 
 #endif // ALLOC_PRAGMA
 
@@ -196,8 +202,13 @@ Return Value:
 
         pDriverObject->MajorFunction[IRP_MJ_CLEANUP]  = NdisprotCleanup;
 
+        // 
+        // **** BEGIN ISOGRID CHANGE ****
+        // 
         pDriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL]  = NdisprotIoControl;
-        
+        // 
+        // **** END ISOGRID CHANGE ****
+        // 
 
         pDriverObject->DriverUnload = NdisprotUnload;
 
@@ -322,6 +333,18 @@ Return Value:
     pIrpSp->FileObject->FsContext = NULL;
 
     DEBUGP(DL_INFO, ("Open: FileObject %p\n", pIrpSp->FileObject));
+
+    // 
+    // **** BEGIN ISOGRID CHANGE ****
+    // 
+    //PNDISPROT_OPEN_CONTEXT   pOpenContext;
+ 
+    //NtStatus = ndisprotOpenDevice((PUCHAR)("FirstDevice"), 5, pIrpSp->FileObject, &pOpenContext);
+
+    //pIrpSp->FileObject->FsContext = pOpenContext;
+    // 
+    // **** END ISOGRID CHANGE ****
+    // 
 
     pIrp->IoStatus.Information = 0;
     pIrp->IoStatus.Status = NtStatus;

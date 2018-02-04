@@ -56,7 +56,7 @@
 
 #define MAX_NDIS_DEVICE_NAME_LEN        256
 
-CHAR            NdisProtDevice[] = "\\\\.\\\\NdisProt";
+CHAR            NdisProtDevice[] = "\\\\.\\\\IsoSwitch";
 CHAR *          pNdisProtDevice = &NdisProtDevice[0];
 
 BOOLEAN         DoEnumerate = FALSE;
