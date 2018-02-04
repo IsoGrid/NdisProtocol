@@ -57,7 +57,24 @@ Return Value:
     NDIS_STATUS                     Status;
 
     UNREFERENCED_PARAMETER(ProtocolDriverContext);
-    
+
+    // 
+    // **** BEGIN ISOGRID CHANGE ****
+    // 
+    if (BindParameters->PhysicalMediumType != NdisPhysicalMedium802_3)
+    {
+      return NDIS_STATUS_BAD_CHARACTERISTICS;
+    }
+
+    if (BindParameters->ConnectionType != NET_IF_CONNECTION_DEDICATED)
+    {
+      return NDIS_STATUS_BAD_CHARACTERISTICS;
+    }
+
+    // 
+    // **** END ISOGRID CHANGE ****
+    // 
+
     do
     {
         //
@@ -1678,6 +1695,54 @@ Return Value:
 
     return (pOpenContext);
 }
+
+// 
+// **** BEGIN ISOGRID CHANGE ****
+// 
+PNDISPROT_OPEN_CONTEXT
+ndisprotLookupSingleDevice(
+)
+/*++
+
+Routine Description:
+
+Search our global list for a single open context structure that
+has a binding and return a pointer to it.
+
+NOTE: we reference the open that we return.
+
+Arguments:
+
+None
+
+Return Value:
+
+Pointer to the matching open context if found, else NULL
+
+--*/
+{
+  PNDISPROT_OPEN_CONTEXT      pOpenContext;
+
+  pOpenContext = NULL;
+
+  NPROT_ACQUIRE_LOCK(&Globals.GlobalLock, FALSE);
+
+  if (Globals.OpenList.Blink != &Globals.OpenList)
+  {
+    pOpenContext = CONTAINING_RECORD(Globals.OpenList.Blink, NDISPROT_OPEN_CONTEXT, Link);
+    NPROT_STRUCT_ASSERT(pOpenContext, oc);
+
+    // Just reference and use the first one we find
+    NPROT_REF_OPEN(pOpenContext);   // ref added by LookupDevice
+  }
+
+  NPROT_RELEASE_LOCK(&Globals.GlobalLock, FALSE);
+
+  return (pOpenContext);
+}
+// 
+// **** END ISOGRID CHANGE ****
+//
 
 
 NDIS_STATUS

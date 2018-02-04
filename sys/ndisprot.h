@@ -50,8 +50,8 @@ Revision History:
 #endif
 
 
-#define NT_DEVICE_NAME          L"\\Device\\Ndisprot"
-#define DOS_DEVICE_NAME         L"\\Global??\\Ndisprot"
+#define NT_DEVICE_NAME          L"\\Device\\IsoSwitch"
+#define DOS_DEVICE_NAME         L"\\Global??\\IsoSwitch"
 
 
 //
@@ -464,6 +464,15 @@ ndisprotLookupDevice(
     _In_reads_bytes_(BindingInfoLength) IN PUCHAR    pBindingInfo,
     IN ULONG                                    BindingInfoLength
     );
+
+// 
+// **** BEGIN ISOGRID CHANGE ****
+// 
+PNDISPROT_OPEN_CONTEXT
+ndisprotLookupSingleDevice();
+// 
+// **** END ISOGRID CHANGE ****
+// 
 
 NDIS_STATUS
 ndisprotQueryOidValue(
