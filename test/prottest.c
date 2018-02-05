@@ -67,7 +67,7 @@ UCHAR           SrcMacAddr[MAC_ADDR_LEN];
 UCHAR           DstMacAddr[MAC_ADDR_LEN];
 BOOLEAN         bDstMacSpecified = FALSE;
 CHAR *          pNdisDeviceName = "JUNK";
-USHORT          EthType = 0x6500;
+USHORT          EthType = 0x0065;
 BOOLEAN         bUseFakeAddress = FALSE;
 UCHAR           FakeSrcMacAddr[MAC_ADDR_LEN] = {0};
 
@@ -431,7 +431,7 @@ DoReadProc(
             }
             ReadCount++;
 
-            DEBUGP(("DoReadProc: read pkt # %d, %d bytes\n", ReadCount, BytesRead));
+            DEBUGP(("DoReadProc: read pkt # %d - %d, %d bytes\n", ReadCount, pReadBuf[6], BytesRead));
 
             if ((NumberOfPackets != -1) && (ReadCount == NumberOfPackets))
             {

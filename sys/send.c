@@ -231,8 +231,14 @@ Return Value:
         pNetBufferList->SourceHandle = pOpenContext->BindingHandle;
         ASSERT (NDIS_MDL_LINKAGE(pMdl) == NULL);
         
-        SendFlags |= NDIS_SEND_FLAGS_CHECK_FOR_LOOPBACK;
-
+        // 
+        // **** BEGIN ISOGRID CHANGE ****
+        // 
+        //SendFlags |= NDIS_SEND_FLAGS_CHECK_FOR_LOOPBACK;
+        // 
+        // **** END ISOGRID CHANGE ****
+        // 
+		
         NdisSendNetBufferLists(        
                         pOpenContext->BindingHandle,
                         pNetBufferList,
