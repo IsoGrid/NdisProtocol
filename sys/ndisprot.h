@@ -264,7 +264,7 @@ typedef struct _NPROT_SEND_NETBUFLIST_RSVD
 //
 //  Max receive packets we allow to be queued up
 //
-#define MAX_RECV_QUEUE_SIZE          32
+#define MAX_RECV_QUEUE_SIZE          256
 // 
 // **** END ISOGRID CHANGE ****
 // 
