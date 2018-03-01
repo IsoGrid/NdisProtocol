@@ -50,8 +50,8 @@ Revision History:
 #endif
 
 
-#define NT_DEVICE_NAME          L"\\Device\\Ndisprot"
-#define DOS_DEVICE_NAME         L"\\Global??\\Ndisprot"
+#define NT_DEVICE_NAME          L"\\Device\\IsoSwitch"
+#define DOS_DEVICE_NAME         L"\\Global??\\IsoSwitch"
 
 
 //
@@ -210,7 +210,7 @@ typedef struct _NDISPROT_GLOBALS
 //  The following are arranged in the way a little-endian processor
 //  would read 2 bytes off the wire.
 //
-#define NPROT_ETH_TYPE               0x6500
+#define NPROT_ETH_TYPE               0x0065
 
 //
 //  NDIS Request context structure
@@ -251,16 +251,23 @@ typedef struct _NPROT_SEND_NETBUFLIST_RSVD
     ULONG                   RefCount;
 
 } NPROT_SEND_NETBUFLIST_RSVD, *PNPROT_SEND_NETBUFLIST_RSVD;
+
+// 
+// **** BEGIN ISOGRID CHANGE ****
+//
 //
 //  Receive packet pool bounds
 //
 #define MIN_RECV_PACKET_POOL_SIZE    4
-#define MAX_RECV_PACKET_POOL_SIZE    20
-
+#define MAX_RECV_PACKET_POOL_SIZE    200
+ 
 //
 //  Max receive packets we allow to be queued up
 //
-#define MAX_RECV_QUEUE_SIZE          4
+#define MAX_RECV_QUEUE_SIZE          256
+// 
+// **** END ISOGRID CHANGE ****
+// 
 
 //
 //  ProtocolReserved in received packets: we link these
@@ -464,6 +471,15 @@ ndisprotLookupDevice(
     _In_reads_bytes_(BindingInfoLength) IN PUCHAR    pBindingInfo,
     IN ULONG                                    BindingInfoLength
     );
+
+// 
+// **** BEGIN ISOGRID CHANGE ****
+// 
+PNDISPROT_OPEN_CONTEXT
+ndisprotLookupSingleDevice();
+// 
+// **** END ISOGRID CHANGE ****
+// 
 
 NDIS_STATUS
 ndisprotQueryOidValue(

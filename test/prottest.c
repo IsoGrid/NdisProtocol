@@ -56,7 +56,7 @@
 
 #define MAX_NDIS_DEVICE_NAME_LEN        256
 
-CHAR            NdisProtDevice[] = "\\\\.\\\\NdisProt";
+CHAR            NdisProtDevice[] = "\\\\.\\\\IsoSwitch";
 CHAR *          pNdisProtDevice = &NdisProtDevice[0];
 
 BOOLEAN         DoEnumerate = FALSE;
@@ -67,7 +67,7 @@ UCHAR           SrcMacAddr[MAC_ADDR_LEN];
 UCHAR           DstMacAddr[MAC_ADDR_LEN];
 BOOLEAN         bDstMacSpecified = FALSE;
 CHAR *          pNdisDeviceName = "JUNK";
-USHORT          EthType = 0x6500;
+USHORT          EthType = 0x0065;
 BOOLEAN         bUseFakeAddress = FALSE;
 UCHAR           FakeSrcMacAddr[MAC_ADDR_LEN] = {0};
 
@@ -431,7 +431,7 @@ DoReadProc(
             }
             ReadCount++;
 
-            DEBUGP(("DoReadProc: read pkt # %d, %d bytes\n", ReadCount, BytesRead));
+            DEBUGP(("DoReadProc: read pkt # %d - %d, %d bytes\n", ReadCount, pReadBuf[6], BytesRead));
 
             if ((NumberOfPackets != -1) && (ReadCount == NumberOfPackets))
             {
@@ -617,33 +617,13 @@ main(
             break;
         }
 
-        if (!OpenNdisDevice(DeviceHandle, pNdisDeviceName))
-        {
-            PRINTF(("Failed to access %s\n", pNdisDeviceName));
-            break;
-        }
+        //if (!OpenNdisDevice(DeviceHandle, pNdisDeviceName))
+        //{
+        //    PRINTF(("Failed to access %s\n", pNdisDeviceName));
+        //    break;
+        //}
 
         DEBUGP(("Opened device %s successfully!\n", pNdisDeviceName));
-
-        if (!GetSrcMac(DeviceHandle, SrcMacAddr))
-        {
-            PRINTF(("Failed to obtain local MAC address\n"));
-            break;
-        }
-
-
-        DEBUGP(("Got local MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
-                    SrcMacAddr[0],
-                    SrcMacAddr[1],
-                    SrcMacAddr[2],
-                    SrcMacAddr[3],
-                    SrcMacAddr[4],
-                    SrcMacAddr[5]));
-
-        if (!bDstMacSpecified)
-        {
-            memcpy(DstMacAddr, SrcMacAddr, MAC_ADDR_LEN);
-        }
 
         if (DoReads)
         {

@@ -253,6 +253,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Exclude="@(ClInclude)" Include="*.h;*.hpp;*.hxx;*.hm;*.inl;*.xsd" />
+    <ClInclude Include="..\debug.h" />
+    <ClInclude Include="..\macros.h" />
+    <ClInclude Include="..\ndisprot.h" />
+    <ClInclude Include="..\protuser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
