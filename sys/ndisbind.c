@@ -99,6 +99,14 @@ Return Value:
         NPROT_INIT_LIST_HEAD(&pOpenContext->RecvNetBufListQueue);
         NPROT_INIT_EVENT(&pOpenContext->PoweredUpEvent);
 
+        // 
+        // **** BEGIN ISOGRID CHANGE ****
+        // 
+        NPROT_INIT_LIST_HEAD(&pOpenContext->BufferedWrites);
+        // 
+        // **** END ISOGRID CHANGE ****
+        // 
+
 
         //
         //  Start off by assuming that the device below is powered up.
@@ -1699,6 +1707,9 @@ Return Value:
 // 
 // **** BEGIN ISOGRID CHANGE ****
 // 
+
+extern ULONG g_SubframeCounter;
+
 PNDISPROT_OPEN_CONTEXT
 ndisprotLookupSingleDevice(
 )
@@ -1734,6 +1745,9 @@ Pointer to the matching open context if found, else NULL
 
     // Just reference and use the first one we find
     NPROT_REF_OPEN(pOpenContext);   // ref added by LookupDevice
+
+    // Reset the counter
+    g_SubframeCounter = 0;
   }
 
   NPROT_RELEASE_LOCK(&Globals.GlobalLock, FALSE);

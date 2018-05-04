@@ -684,6 +684,13 @@ Return Value:
     PLIST_ENTRY        pDiscardEnt;
     PNET_BUFFER_LIST   pDiscardNetBufList;
 
+    // 
+    // **** BEGIN ISOGRID CHANGE ****
+    //
+    PNET_BUFFER_LIST   pSendNetBufferList = NULL;
+    // 
+    // **** END ISOGRID CHANGE ****
+    //
     do
     {
 
@@ -720,6 +727,32 @@ Return Value:
                     " queued nbl %p, queue size %d\n",
                     pOpenContext, pRcvNetBufList, pOpenContext->RecvNetBufListCount));
 
+
+            // 
+            // **** BEGIN ISOGRID CHANGE ****
+            // 
+            // Send a buffered packet right when we receive a packet.
+            // This ensures correct Isochronous timing on the IsoSwitch
+            // 
+
+            if (!NPROT_IS_LIST_EMPTY(&pOpenContext->BufferedWrites) &&
+                pOpenContext->PendedSendCount == 0)
+            {
+              PIRP pSendIrp =
+                CONTAINING_RECORD(pOpenContext->BufferedWrites.Flink, IRP, Tail.Overlay.ListEntry);
+
+              NPROT_REMOVE_HEAD_LIST(&pOpenContext->BufferedWrites);
+              pOpenContext->BufferedWriteCount--;
+
+              NPROT_INSERT_TAIL_LIST(&pOpenContext->PendedWrites, &pSendIrp->Tail.Overlay.ListEntry);
+              pOpenContext->PendedSendCount++;
+
+              pSendNetBufferList = (PNET_BUFFER_LIST)(pSendIrp->Tail.Overlay.DriverContext[1]);
+              pSendNetBufferList->Next = NULL;
+            }
+            // 
+            // **** END ISOGRID CHANGE ****
+            // 
         }
         else
         {
@@ -767,6 +800,23 @@ Return Value:
         {
             NPROT_RELEASE_LOCK(&pOpenContext->Lock, DispatchLevel);
         }
+
+        // 
+        // **** BEGIN ISOGRID CHANGE ****
+        //
+        if (pSendNetBufferList != NULL)
+        {
+          //NdisMSleep(100);
+
+          NdisSendNetBufferLists(
+            pSendNetBufferList->SourceHandle,
+            pSendNetBufferList,
+            NDIS_DEFAULT_PORT_NUMBER,
+            DispatchLevel ? NDIS_SEND_FLAGS_DISPATCH_LEVEL : 0);
+        }
+        // 
+        // **** END ISOGRID CHANGE ****
+        // 
 
         //
         //  Run the receive queue service routine now.

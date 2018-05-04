@@ -130,6 +130,15 @@ typedef struct _NDISPROT_OPEN_CONTEXT
     ULONG                   DataBackFillSize;
     ULONG                   ContextBackFillSize;
 
+    // 
+    // **** BEGIN ISOGRID CHANGE ****
+    // 
+    LIST_ENTRY              BufferedWrites;   // Buffered Write IRPs
+    ULONG                   BufferedWriteCount;
+    // 
+    // **** END ISOGRID CHANGE ****
+    // 
+
     LIST_ENTRY              PendedWrites;   // pended Write IRPs
     ULONG                   PendedSendCount;
 
@@ -234,7 +243,6 @@ typedef struct _NDISPROT_REQUEST
 /*
 #define MIN_SEND_PACKET_POOL_SIZE    20
 */
-#define MAX_SEND_PACKET_POOL_SIZE    400
 
 
 //
@@ -258,13 +266,13 @@ typedef struct _NPROT_SEND_NETBUFLIST_RSVD
 //
 //  Receive packet pool bounds
 //
-#define MIN_RECV_PACKET_POOL_SIZE    4
-#define MAX_RECV_PACKET_POOL_SIZE    200
+//#define MIN_RECV_PACKET_POOL_SIZE    4
+//#define MAX_RECV_PACKET_POOL_SIZE    200
  
 //
 //  Max receive packets we allow to be queued up
 //
-#define MAX_RECV_QUEUE_SIZE          256
+#define MAX_RECV_QUEUE_SIZE          40
 // 
 // **** END ISOGRID CHANGE ****
 // 

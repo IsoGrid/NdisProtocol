@@ -56,7 +56,6 @@ Return Value:
     PMDL                    pMdl;
     NDISPROT_ETH_HEADER UNALIGNED *pEthHeader;
     PVOID                   CancelId;
-    ULONG                   SendFlags = 0;
 
     UNREFERENCED_PARAMETER(pDeviceObject);
 
@@ -107,9 +106,9 @@ Return Value:
         // **** BEGIN ISOGRID CHANGE ****
         // 
 
-        if (DataLength != 534)
+        if (DataLength != 534 && DataLength != (534 * 5))
         {
-            DEBUGP(DL_WARN, ("Write: must be 534 bytes (specified %d bytes)\n",
+            DEBUGP(DL_WARN, ("Write: must be 534 (or 5x) bytes (specified %d bytes)\n",
                 DataLength));
             NtStatus = STATUS_INVALID_BUFFER_SIZE;
             break;
@@ -174,7 +173,13 @@ Return Value:
             NtStatus = STATUS_INSUFFICIENT_RESOURCES;
             break;
         }
-        pOpenContext->PendedSendCount++;
+        // 
+        // **** BEGIN ISOGRID CHANGE ****
+        //
+        //pOpenContext->PendedSendCount++;
+        // 
+        // **** END ISOGRID CHANGE ****
+        //
 
         NPROT_REF_OPEN(pOpenContext);  // pended send
 
@@ -198,7 +203,15 @@ Return Value:
         pIrp->Tail.Overlay.DriverContext[1] = (PVOID)pNetBufferList;
         pIrp->Tail.Overlay.DriverContext[2] = CancelId;
 
-        NPROT_INSERT_TAIL_LIST(&pOpenContext->PendedWrites, &pIrp->Tail.Overlay.ListEntry);
+        // 
+        // **** BEGIN ISOGRID CHANGE ****
+        //
+        NPROT_INSERT_TAIL_LIST(&pOpenContext->BufferedWrites, &pIrp->Tail.Overlay.ListEntry);
+        pOpenContext->BufferedWriteCount++;
+
+        // 
+        // **** END ISOGRID CHANGE ****
+        //
 
         IoSetCancelRoutine(pIrp, NdisprotCancelWrite);
 
@@ -237,14 +250,7 @@ Return Value:
         //SendFlags |= NDIS_SEND_FLAGS_CHECK_FOR_LOOPBACK;
         // 
         // **** END ISOGRID CHANGE ****
-        // 
-		
-        NdisSendNetBufferLists(        
-                        pOpenContext->BindingHandle,
-                        pNetBufferList,
-                        NDIS_DEFAULT_PORT_NUMBER,
-                        SendFlags);
-
+        //
     }
     while (FALSE);
 
@@ -327,7 +333,7 @@ Return Value:
 
         CancelId = pIrp->Tail.Overlay.DriverContext[2];
         //
-        //  Either the send completion routine hasn't run, or we got a peak
+        //  Either the send completion routine hasn't run, or we got a peek
         //  at the IRP/netbufferlist before it had a chance to take it out of the
         //  pending IRP queue.
         //
@@ -351,6 +357,68 @@ Return Value:
                 CancelId);
         
     }
+    // 
+    // **** BEGIN ISOGRID CHANGE ****
+    //
+    else
+    {
+      //
+      //  Try to locate the IRP in the buffered write queue.
+      //
+      NPROT_ACQUIRE_LOCK(&pOpenContext->Lock, FALSE);
+
+      for (pIrpEntry = pOpenContext->BufferedWrites.Flink;
+           pIrpEntry != &pOpenContext->BufferedWrites;
+           pIrpEntry = pIrpEntry->Flink)
+      {
+        if (pIrp == CONTAINING_RECORD(pIrpEntry, IRP, Tail.Overlay.ListEntry))
+        {
+          FoundIrp = TRUE;
+          break;
+        }
+      }
+
+      if (FoundIrp)
+      {
+        PNET_BUFFER_LIST pNetBufferList = (PNET_BUFFER_LIST)(pIrp->Tail.Overlay.DriverContext[1]);
+
+        NPROT_REMOVE_ENTRY_LIST(&pIrp->Tail.Overlay.ListEntry);
+        pOpenContext->BufferedWriteCount--;
+
+        NPROT_RELEASE_LOCK(&pOpenContext->Lock, FALSE);
+
+        IoAcquireCancelSpinLock(&pIrp->CancelIrql);
+        IoSetCancelRoutine(pIrp, NULL);
+        pIrp->Tail.Overlay.DriverContext[0] = NULL;
+        pIrp->Tail.Overlay.DriverContext[1] = NULL;
+        IoReleaseCancelSpinLock(pIrp->CancelIrql);
+
+        //
+        //  We are done with the NDIS_PACKET:
+        //
+        NPROT_DEREF_SEND_NBL(pNetBufferList, FALSE);
+
+        //
+        //  Complete the Write IRP with the right status.
+        //
+        pIrp->IoStatus.Information = 0;
+        pIrp->IoStatus.Status = STATUS_UNSUCCESSFUL;
+
+        DEBUGP(DL_INFO, ("SendCancelComplete: NetBufferList %p/IRP %p/Length %d "
+          "completed with status %x\n",
+          pNetBufferList, pIrp, pIrp->IoStatus.Information, pIrp->IoStatus.Status));
+
+        IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+      }
+      else
+      {
+        NPROT_RELEASE_LOCK(&pOpenContext->Lock, FALSE);
+      }
+    }
+    // 
+    // **** END ISOGRID CHANGE ****
+    //
+
     //
     //  else the send completion routine has already picked up this IRP.
     //
